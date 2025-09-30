@@ -1,30 +1,33 @@
-import React, { useState } from 'react';
-import { LogIn, UserPlus, Mail, Lock, User, Shield } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from "react";
+import { LogIn, UserPlus, Mail, Lock, User, Shield } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 export function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       if (isSignUp) {
         await signUp(email, password, username);
+        setIsSignUp(false);
+        setUsername("");
+        setPassword("");
       } else {
         await signIn(email, password);
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      setError(err.message || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -38,9 +41,13 @@ export function Auth() {
           <div className="bg-cyan-400 p-4 rounded-2xl inline-block mb-4">
             <Shield className="h-12 w-12 text-blue-900" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">CyberGuard Portal</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            CyberGuard Portal
+          </h1>
           <p className="text-cyan-200">
-            {isSignUp ? 'Create your account to start learning' : 'Sign in to continue your cybersecurity journey'}
+            {isSignUp
+              ? "Create your account to start learning"
+              : "Sign in to continue your cybersecurity journey"}
           </p>
         </div>
 
@@ -50,12 +57,12 @@ export function Auth() {
             <button
               onClick={() => {
                 setIsSignUp(false);
-                setError('');
+                setError("");
               }}
               className={`flex-1 py-3 text-center font-medium transition-all duration-200 ${
                 !isSignUp
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 hover:text-blue-600'
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-500 hover:text-blue-600"
               }`}
             >
               <LogIn className="h-5 w-5 inline-block mr-2" />
@@ -64,12 +71,12 @@ export function Auth() {
             <button
               onClick={() => {
                 setIsSignUp(true);
-                setError('');
+                setError("");
               }}
               className={`flex-1 py-3 text-center font-medium transition-all duration-200 ${
                 isSignUp
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 hover:text-blue-600'
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-500 hover:text-blue-600"
               }`}
             >
               <UserPlus className="h-5 w-5 inline-block mr-2" />
@@ -151,7 +158,7 @@ export function Auth() {
               {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                  {isSignUp ? "Creating Account..." : "Signing In..."}
                 </div>
               ) : (
                 <div className="flex items-center justify-center">
@@ -174,28 +181,54 @@ export function Auth() {
           {/* Features for new users */}
           {isSignUp && (
             <div className="mt-8 pt-6 border-t border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-4">What you'll get:</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">
+                What you'll get:
+              </h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-center">
                   <div className="bg-green-100 rounded-full p-1 mr-3">
-                    <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-3 h-3 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   Access to comprehensive cybersecurity learning materials
                 </li>
                 <li className="flex items-center">
                   <div className="bg-green-100 rounded-full p-1 mr-3">
-                    <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-3 h-3 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   Personalized quiz results and progress tracking
                 </li>
                 <li className="flex items-center">
                   <div className="bg-green-100 rounded-full p-1 mr-3">
-                    <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-3 h-3 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   Curated video library with expert content
