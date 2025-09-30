@@ -1,128 +1,74 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User as SupabaseUser } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
-import { AuthContextType, User } from '../types';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
+
+interface User {
+  email: string;
+  username: string;
+  token: string; 
+}
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, username: string) => Promise<void>;
+  signOut: () => void;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used inside AuthProvider");
   return context;
 }
 
-interface AuthProviderProps {
-  children: React.ReactNode;
-}
-
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchUserData(session.user);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          await fetchUserData(session.user);
-        } else {
-          setUser(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  const fetchUserData = async (supabaseUser: SupabaseUser) => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', supabaseUser.id)
-        .single();
-
-      if (error) {
-        // User doesn't exist in our users table, create them
-        const newUser = {
-          id: supabaseUser.id,
-          email: supabaseUser.email!,
-          username: supabaseUser.email!.split('@')[0],
-          created_at: new Date().toISOString()
-        };
-
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert([newUser]);
-
-        if (!insertError) {
-          setUser(newUser);
-        }
-      } else {
-        setUser(data);
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const signIn = async (email: string, password: string) => {
-    const res = await supabase.auth.signInWithPassword({
+    setLoading(true);
+    const res = await axios.post("https://cyber-backend-psi.vercel.app/signin", {
       email,
       password,
     });
 
-    console.log(res.data)
+    const userData: User = {
+      ...res.data.user,
+      token: res.data.token,
+    };
 
-    if (res.error) {
-      throw res.error;
-    }
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+    setLoading(false);
   };
 
   const signUp = async (email: string, password: string, username: string) => {
-    const res = await supabase.auth.signUp({
+    setLoading(true);
+    await axios.post("https://cyber-backend-psi.vercel.app/signup", {
       email,
       password,
+      username,
     });
-
-    console.log(res.data)
-
-    if (res.error) {
-      throw res.error;
-    }
+    setLoading(false);
   };
 
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      throw error;
-    }
-  };
-
-  const value: AuthContextType = {
-    user,
-    signIn,
-    signUp,
-    signOut,
-    loading,
+  const signOut = () => {
+    localStorage.removeItem("user");
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, signIn, signUp, signOut, loading }}>
       {children}
     </AuthContext.Provider>
   );
